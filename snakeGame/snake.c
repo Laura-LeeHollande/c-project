@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-int i, j, height = 30;
-int width = 30, gameover, score;
+int i, j, height = 20, width = 20;
+int gameover, score;
 
 /* -------------------------------------------------------------------------- */
 /*                            DRAW BOUNDARIES START                           */
@@ -65,7 +65,7 @@ void draw()
 /* -------------------------------------------------------------------------- */
 void setup()
 {
-    
+
 }
     // Driver code
     int
