@@ -2,6 +2,38 @@
 #include <stdlib.h>
 int i, j, height = 20, width = 20;
 int gameover, score;
+int x, y, fruitx, fruity, flag;
+
+/* -------------------------------------------------------------------------- */
+/*                            FRUITS POSITION START                           */
+/* -------------------------------------------------------------------------- */
+void setup()
+{
+    gameover = 0;
+
+    // Stores height and
+    x = height / 2;
+    y = width / 2;
+
+label1:
+    fruitx = rand() % 20;
+    if (fruitx == 0)
+    {
+        goto label1;
+    }
+
+label2:
+    fruity = rand() % 20;
+    if (fruity == 0)
+    {
+        goto label2;
+    }
+
+    score = 0;
+}
+/* -------------------------------------------------------------------------- */
+/*                             FRUITS POSITION END                            */
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*                            DRAW BOUNDARIES START                           */
@@ -55,24 +87,24 @@ void draw()
         }
         printf("\n");
     }
+
+    printf("score = %d", score);
+    printf("\n");
+    printf("Press X to quit the game");
 }
 /* -------------------------------------------------------------------------- */
 /*                             DRAW BOUNDARIES END                            */
 /* -------------------------------------------------------------------------- */
 
-/* -------------------------------------------------------------------------- */
-/*                            FRUITS POSITION START                           */
-/* -------------------------------------------------------------------------- */
-void setup()
+// Driver code
+int main()
 {
+    // Generate boundary
+    setup();
 
-}
-    // Driver code
-    int
-    main()
-{
     // Function call
-    draw();
-
-    return 0;
+    while (!gameover)
+    {
+        draw();
+    }
 }
