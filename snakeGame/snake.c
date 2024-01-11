@@ -1,213 +1,264 @@
-#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
+#include <ncurses.h>
 
-int i, j, height = 30, width = 30;
-int gameover, score;
-int x, y, fruitx, fruity, flag;
+#define width 20
+#define height 10
 
-/* -------------------------------------------------------------------------- */
-/*                            FRUITS POSITION START                           */
-/* -------------------------------------------------------------------------- */
-void setup()
+typedef struct
 {
-    gameover = 0;
+    int x, y;
+} Point;
 
-    // Stores height and
-    x = height / 2;
-    y = width / 2;
+typedef struct
+{
+    Point head;
+    Point body[width * height];
+    int length;
+    char direction;
+} Snake;
 
-label1:
-    fruitx = rand() % 20;
-    if (fruitx == 0)
-    {
-        goto label1;
-    }
+typedef struct
+{
+    Point position;
+} Food;
 
-label2:
-    fruity = rand() % 20;
-    if (fruity == 0)
-    {
-        goto label2;
-    }
+void generateFoodPosition(Food *food);
 
-    score = 0;
+/* -------------------------------------------------------------------------- */
+/*                            GAME INITIATION START                           */
+/* -------------------------------------------------------------------------- */
+void initGame(Snake *snake, Food *food)
+{
+    // Initialize ncurses
+    initscr();
+    raw();
+    keypad(stdscr, TRUE);
+    noecho();
+    curs_set(0);
+
+    // Initialize snake
+    snake->head.x = width / 2;
+    snake->head.y = height / 2;
+    snake->length = 1;
+    snake->direction = 'R';
+
+    // Initialize food
+    srand(time(NULL));
+    generateFoodPosition(food);
 }
 /* -------------------------------------------------------------------------- */
-/*                             FRUITS POSITION END                            */
+/*                             GAME INITIATION END                            */
+/* -------------------------------------------------------------------------- */
+
+    /* -------------------------------------------------------------------------- */
+    /*                        GENERATE FOOD POSITION START                        */
+    /* -------------------------------------------------------------------------- */
+    void
+    generateFoodPosition(Food *food)
+{
+    food->position.x = 1 + rand() % (width - 1);
+    food->position.y = 1 + rand() % (height - 1);
+}
+/* -------------------------------------------------------------------------- */
+/*                         GENERATE FOOD POSITION END                         */
+/* -------------------------------------------------------------------------- */
+
+    /* -------------------------------------------------------------------------- */
+    /*                            DRAW GAME AREA START                            */
+    /* -------------------------------------------------------------------------- */
+    /* --------------------------------- OUTPUT --------------------------------- */
+    // ----------------------
+    // |                    |
+    // |                    |
+    // |                    |
+    // |                    |
+    // |                    |
+    // |                    |
+    // |                    |
+    // |                    |
+    // |                    |
+    // |                    |
+    // ----------------------
+    void
+    drawBorder()
+{
+    // Draw top border
+    for (int i = 0; i < width + 2; i++)
+    {
+        mvprintw(0, i, "-");
+    }
+    // Draw bottom border
+    for (int i = 0; i < width + 2; i++)
+    {
+        mvprintw(height + 1, i, "-");
+    }
+    // Draw left and right borders
+    for (int i = 1; i <= height; i++)
+    {
+        mvprintw(i, 0, "|");
+        mvprintw(i, width + 1, "|");
+    }
+}
+/* -------------------------------------------------------------------------- */
+/*                          DRAW GAME AREA START END                          */
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-/*                            DRAW BOUNDARIES START                           */
+/*                         DRAW SNAKE AND FRUITS START                        */
 /* -------------------------------------------------------------------------- */
-/* --------------------------------- OUTPUT --------------------------------- */
-// ##############################
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// #                            #
-// ##############################
-void draw()
+void draw(Snake *snake, Food *food)
 {
     clear();
-    for (i = 0; i < height; i++)
+
+    drawBorder();
+
+    // Draw snake
+    mvprintw(snake->head.y, snake->head.x, "O");
+    for (int i = 0; i < snake->length; ++i)
     {
-        for (j = 0; j < width; j++)
-        {
-            if (i == 0 || i == height - 1 || j == 0 || j == width - 1)
-            {
-                printf("#");
-            }
-            else
-            {
-                if (i == x && j == y)
-                    printf("0");
-                else if (i == fruitx && j == fruity)
-                    printf("*");
-                else
-                    printf(" ");
-            }
-        }
-        printf("\n"); // Déplacez cette ligne à l'extérieur de la boucle interne
+        mvprintw(snake->body[i].y, snake->body[i].x, "o");
     }
 
-    printf("score = %d", score);
-    printf("\n");
-    printf("Press X to quit the game");
+    // Draw food
+    mvprintw(food->position.y, food->position.x, "F");
+
+    // Refresh the screen
     refresh();
 }
 /* -------------------------------------------------------------------------- */
-/*                             DRAW BOUNDARIES END                            */
+/*                          DRAW SNAKE AND FRUITS END                         */
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-/*                         SET UP KEYBORD INPUT START                         */
+/*                       SET UP THE INPUTS KEYBORD START                      */
 /* -------------------------------------------------------------------------- */
-void input()
+/* --------------------------------- INPUTS --------------------------------- */
+// Move up: up arrow
+// Move down: down arrow
+// Move right: right arrow
+// Move left: left arrow
+void getInput(Snake *snake)
 {
-    int ch = getch(); // Utilise getch() de ncurses au lieu de getche()
-
+    int ch = getch();
     switch (ch)
     {
-    case 'z':
-        flag = 1;
+    case KEY_UP:
+        if (snake->direction != 'D')
+            snake->direction = 'U';
+        break;
+    case KEY_DOWN:
+        if (snake->direction != 'U')
+            snake->direction = 'D';
+        break;
+    case KEY_LEFT:
+        if (snake->direction != 'R')
+            snake->direction = 'L';
+        break;
+    case KEY_RIGHT:
+        if (snake->direction != 'L')
+            snake->direction = 'R';
         break;
     case 'q':
-        flag = 2;
-        break;
-    case 's':
-        flag = 3;
-        break;
-    case 'd':
-        flag = 4;
-        break;
-    case 'x':
-        gameover = x;
+        endwin();
+        exit(0);
         break;
     }
 }
 /* -------------------------------------------------------------------------- */
-/*                          SET UP KEYBORD INPUT END                          */
+/*                        SET UP THE INPUTS KEYBORD END                       */
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-/*                         MOVEMENT OF THE SNAKE START                        */
+/*                           SNAKE MOUVEMENTS START                           */
 /* -------------------------------------------------------------------------- */
-void logic()
+void moveSnake(Snake *snake, Food *food)
 {
-    usleep(10000);
-    switch (flag)
+    // Move the body
+    for (int i = snake->length - 1; i > 0; --i)
     {
-    case 1:
-        y--;
+        snake->body[i] = snake->body[i - 1];
+    }
+
+    // Move the head
+    snake->body[0] = snake->head;
+
+    switch (snake->direction)
+    {
+    case 'U':
+        snake->head.y--;
         break;
-    case 2:
-        x++;
+    case 'D':
+        snake->head.y++;
         break;
-    case 3:
-        y++;
+    case 'L':
+        snake->head.x--;
         break;
-    case 4:
-        x--;
-        break;
-    default:
+    case 'R':
+        snake->head.x++;
         break;
     }
 
-    // If the game is
-    if (x < 0 || x > height || y < 0 || y > width)
+    // Check for collisions with food
+    if (snake->head.x == food->position.x && snake->head.y == food->position.y)
     {
-        gameover = 1;
-    }
-
-    // If snake reach the fruit
-    if (x == fruitx && y == fruity)
-    {
-    label3:
-        fruitx = rand() % 20;
-        if (fruitx == 0)
-        {
-            goto label3;
-        }
-    label4:
-        fruity = rand() % 20;
-        if (fruity == 0)
-        {
-            goto label4;
-        }
-        score += 10;
+        snake->length++;
+        generateFoodPosition(food);
     }
 }
 /* -------------------------------------------------------------------------- */
-/*                          MOVEMENT OF THE SNAKE END                         */
+/*                            SNAKE MOUVEMENTS END                            */
 /* -------------------------------------------------------------------------- */
 
-// Driver code
-int main()
+/* -------------------------------------------------------------------------- */
+/*                           CHECK COLLISIONS START                           */
+/* -------------------------------------------------------------------------- */
+int checkCollision(Snake *snake)
 {
-    int m, n;
-
-    initscr(); // Initialiser l'environnement ncurses
-    clear();   // Effacer l'écran
-    noecho();  // Ne pas afficher les caractères saisis
-    cbreak();  // Désactiver la mise en mémoire tampon de ligne
-    // Generate boundary
-    setup();
-
-    // Function call
-    while (!gameover)
+    // Check if the snake hits the walls
+    if (snake->head.x <= 0 || snake->head.x >= width + 1 || snake->head.y <= 0 || snake->head.y >= height + 1)
     {
-        draw();
-        input();
-        logic();
+        return 1;
     }
 
-    endwin();
+    // Check if the snake hits itself
+    for (int i = 0; i < snake->length; ++i)
+    {
+        if (snake->head.x == snake->body[i].x && snake->head.y == snake->body[i].y)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+/* -------------------------------------------------------------------------- */
+/*                            CHECK COLLISIONS END                            */
+/* -------------------------------------------------------------------------- */
+
+    int
+    main()
+{
+    Snake snake;
+    Food food;
+
+    initGame(&snake, &food);
+
+    while (1)
+    {
+        getInput(&snake);
+        moveSnake(&snake, &food);
+        if (checkCollision(&snake))
+        {
+            endwin();
+            printf("Game Over!\n");
+            return 0;
+        }
+        draw(&snake, &food);
+        usleep(100000); // 100 milliseconds delay
+    }
 
     return 0;
 }
