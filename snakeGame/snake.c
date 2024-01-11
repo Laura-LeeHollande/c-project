@@ -35,40 +35,72 @@ int checkCollision(Snake *snake);
 
 int main()
 {
-    Snake snake;
-    Food food;
+    int replay = 1;
 
-    initscr();
-    raw();
-    keypad(stdscr, true);
-    noecho();
-    curs_set(0);
-
-    mvprintw(height / 2, width / 2 - 10, "Press SPACE to start");
-
-    int ch;
-    while ((ch = getch()) != ' ')
+    while (replay)
     {
-        // Wait for the space bar to be pressed
-    }
+        Snake snake;
+        Food food;
 
-    clear();
+        initscr();
+        raw();
+        keypad(stdscr, TRUE);
+        noecho();
+        curs_set(0);
 
-    initGame(&snake, &food);
+        mvprintw(height / 2, width / 2 - 10, "Press SPACE BAR to start");
 
-    while (1)
-    {
-        getInput(&snake);
-        moveSnake(&snake, &food);
-        if (checkCollision(&snake))
+        int ch;
+        while ((ch = getch()) != ' ')
         {
-            endwin();
-            printf("Game Over!\n");
-            return 0;
+            // Wait for the space bar to be pressed
         }
-        draw(&snake, &food);
-        usleep(100000); // 100 milliseconds delay
+
+        clear();
+
+        initGame(&snake, &food);
+
+        while (1)
+        {
+            getInput(&snake);
+            moveSnake(&snake, &food);
+            if (checkCollision(&snake))
+            {
+                endwin();
+                mvprintw(height / 2, width / 2 - 5, "Game Over!");
+                mvprintw(height / 2 + 1, width / 2 - 10, "Press 'R' to replay or 'Q' to quit");
+
+                int choice;
+                while (1)
+                {
+                    choice = getch();
+                    if (choice == 'R' || choice == 'r')
+                    {
+                        replay = 1;
+                        break;
+                    }
+                    else if (choice == 'Q' || choice == 'q')
+                    {
+                        replay = 0;
+                        break;
+                    }
+                }
+
+                if (!replay)
+                {
+                    break; // Exit the game loop
+                }
+
+                clear();
+                initGame(&snake, &food);
+            }
+
+            draw(&snake, &food);
+            usleep(100000); // 100 milliseconds delay
+        }
     }
+
+    endwin(); // Close ncurses
 
     return 0;
 }
@@ -99,11 +131,10 @@ void initGame(Snake *snake, Food *food)
 /*                             GAME INITIATION END                            */
 /* -------------------------------------------------------------------------- */
 
-    /* -------------------------------------------------------------------------- */
-    /*                        GENERATE FOOD POSITION START                        */
-    /* -------------------------------------------------------------------------- */
-    void
-    generateFoodPosition(Food *food)
+/* -------------------------------------------------------------------------- */
+/*                        GENERATE FOOD POSITION START                        */
+/* -------------------------------------------------------------------------- */
+void generateFoodPosition(Food *food)
 {
     food->position.x = 1 + rand() % (width - 1);
     food->position.y = 1 + rand() % (height - 1);
@@ -112,24 +143,23 @@ void initGame(Snake *snake, Food *food)
 /*                         GENERATE FOOD POSITION END                         */
 /* -------------------------------------------------------------------------- */
 
-    /* -------------------------------------------------------------------------- */
-    /*                            DRAW GAME AREA START                            */
-    /* -------------------------------------------------------------------------- */
-    /* --------------------------------- OUTPUT --------------------------------- */
-    // ----------------------
-    // |                    |
-    // |                    |
-    // |                    |
-    // |                    |
-    // |                    |
-    // |                    |
-    // |                    |
-    // |                    |
-    // |                    |
-    // |                    |
-    // ----------------------
-    void
-    drawBorder()
+/* -------------------------------------------------------------------------- */
+/*                            DRAW GAME AREA START                            */
+/* -------------------------------------------------------------------------- */
+/* --------------------------------- OUTPUT --------------------------------- */
+// ----------------------
+// |                    |
+// |                    |
+// |                    |
+// |                    |
+// |                    |
+// |                    |
+// |                    |
+// |                    |
+// |                    |
+// |                    |
+// ----------------------
+void drawBorder()
 {
     // Draw top border
     for (int i = 0; i < width + 2; i++)
@@ -283,4 +313,3 @@ int checkCollision(Snake *snake)
 /* -------------------------------------------------------------------------- */
 /*                            CHECK COLLISIONS END                            */
 /* -------------------------------------------------------------------------- */
-
