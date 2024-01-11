@@ -26,6 +26,52 @@ typedef struct
 } Food;
 
 void generateFoodPosition(Food *food);
+void initGame(Snake *snake, Food *food);
+void drawborder();
+void draw(Snake *snake, Food *food);
+void getInput(Snake *snake);
+void moveSnake(Snake *snake, Food *food);
+int checkCollision(Snake *snake);
+
+int main()
+{
+    Snake snake;
+    Food food;
+
+    initscr();
+    raw();
+    keypad(stdscr, true);
+    noecho();
+    curs_set(0);
+
+    mvprintw(height / 2, width / 2 - 10, "Press SPACE to start");
+
+    int ch;
+    while ((ch = getch()) != ' ')
+    {
+        // Wait for the space bar to be pressed
+    }
+
+    clear();
+
+    initGame(&snake, &food);
+
+    while (1)
+    {
+        getInput(&snake);
+        moveSnake(&snake, &food);
+        if (checkCollision(&snake))
+        {
+            endwin();
+            printf("Game Over!\n");
+            return 0;
+        }
+        draw(&snake, &food);
+        usleep(100000); // 100 milliseconds delay
+    }
+
+    return 0;
+}
 
 /* -------------------------------------------------------------------------- */
 /*                            GAME INITIATION START                           */
@@ -238,27 +284,3 @@ int checkCollision(Snake *snake)
 /*                            CHECK COLLISIONS END                            */
 /* -------------------------------------------------------------------------- */
 
-    int
-    main()
-{
-    Snake snake;
-    Food food;
-
-    initGame(&snake, &food);
-
-    while (1)
-    {
-        getInput(&snake);
-        moveSnake(&snake, &food);
-        if (checkCollision(&snake))
-        {
-            endwin();
-            printf("Game Over!\n");
-            return 0;
-        }
-        draw(&snake, &food);
-        usleep(100000); // 100 milliseconds delay
-    }
-
-    return 0;
-}
