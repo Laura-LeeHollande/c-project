@@ -25,9 +25,10 @@ typedef struct
     Point position;
 } Food;
 
-void generateFoodPosition(Food *food);
+int foodCollidesWithSnake(Food *food, Snake *snake);
+void generateFoodPosition(Food *food, Snake *snake);
 void initGame(Snake *snake, Food *food);
-void drawborder();
+void drawBorder();
 void draw(Snake *snake, Food *food);
 void getInput(Snake *snake);
 void moveSnake(Snake *snake, Food *food);
@@ -125,7 +126,7 @@ void initGame(Snake *snake, Food *food)
 
     // Initialize food
     srand(time(NULL));
-    generateFoodPosition(food);
+    generateFoodPosition(food, snake);
 }
 /* -------------------------------------------------------------------------- */
 /*                             GAME INITIATION END                            */
@@ -134,10 +135,26 @@ void initGame(Snake *snake, Food *food)
 /* -------------------------------------------------------------------------- */
 /*                        GENERATE FOOD POSITION START                        */
 /* -------------------------------------------------------------------------- */
-void generateFoodPosition(Food *food)
+void generateFoodPosition(Food *food, Snake *snake)
 {
-    food->position.x = 1 + rand() % (width - 1);
-    food->position.y = 1 + rand() % (height - 1);
+    do
+    {
+        food->position.x = 1 + rand() % (width - 1);
+        food->position.y = 1 + rand() % (height - 1);
+    } while (foodCollidesWithSnake(food, snake));
+}
+
+int(foodCollidesWithSnake(Food *food, Snake *snake))
+{
+    // Check if the fruits position collides with the snake
+    for (int i = 0; i < snake->length; ++i)
+    {
+        if (food->position.x == snake->body[i].x && food->position.y == snake->body[i].y)
+        {
+            return 1;
+        }
+    }
+    return 0;
 }
 /* -------------------------------------------------------------------------- */
 /*                         GENERATE FOOD POSITION END                         */
@@ -281,7 +298,7 @@ void moveSnake(Snake *snake, Food *food)
     if (snake->head.x == food->position.x && snake->head.y == food->position.y)
     {
         snake->length++;
-        generateFoodPosition(food);
+        generateFoodPosition(food, snake);
     }
 }
 /* -------------------------------------------------------------------------- */
