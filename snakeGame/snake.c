@@ -18,6 +18,7 @@ typedef struct
     Point body[width * height];
     int length;
     char direction;
+    int score;
 } Snake;
 
 typedef struct
@@ -25,6 +26,7 @@ typedef struct
     Point position;
 } Food;
 
+/* --------------------------- FUNCTION PROTOTYPE --------------------------- */
 int foodCollidesWithSnake(Food *food, Snake *snake);
 void generateFoodPosition(Food *food, Snake *snake);
 void initGame(Snake *snake, Food *food);
@@ -123,6 +125,7 @@ void initGame(Snake *snake, Food *food)
     snake->head.y = height / 2;
     snake->length = 1;
     snake->direction = 'R';
+    snake->score = 0;
 
     // Initialize food
     srand(time(NULL));
@@ -196,13 +199,14 @@ void drawBorder()
     }
 }
 /* -------------------------------------------------------------------------- */
-/*                          DRAW GAME AREA START END                          */
+/*                             DRAW GAME AREA END                             */
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*                         DRAW SNAKE AND FRUITS START                        */
 /* -------------------------------------------------------------------------- */
-void draw(Snake *snake, Food *food)
+    void
+    draw(Snake *snake, Food *food)
 {
     clear();
 
@@ -217,6 +221,7 @@ void draw(Snake *snake, Food *food)
 
     // Draw food
     mvprintw(food->position.y, food->position.x, "F");
+    mvprintw(height + 2, 2, "Score %d", snake->score);
 
     // Refresh the screen
     refresh();
@@ -298,6 +303,7 @@ void moveSnake(Snake *snake, Food *food)
     if (snake->head.x == food->position.x && snake->head.y == food->position.y)
     {
         snake->length++;
+        snake-> score += 10;
         generateFoodPosition(food, snake);
     }
 }
